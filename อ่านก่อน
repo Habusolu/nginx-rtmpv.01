@@ -1,0 +1,82 @@
+ติดตั้ง nginx-rtmp-module และ nginx บน server
+
+ติดตั้ง dependency สำหรับ nginx
+sudo yum install -y gcc make zlib-devel pcre-devel openssl-devel
+wget http://nginx.org/download/nginx-1.18.0.tar.gz
+tar -xvzf nginx-1.18.0.tar.gz
+cd nginx-1.18.0
+./configure --with-http_ssl_module --add-module=../nginx-rtmp-module
+make
+sudo make install
+sudo /usr/local/nginx/sbin/nginx
+
+ติดตั้ง ffmpeg
+sudo yum install -y epel-release
+sudo yum install -y ffmpeg
+
+เพิ่ม configuration ในไฟล์ /usr/local/nginx/conf/nginx.conf
+rtmp {
+    server {
+        listen 1935;
+        chunk_size 4000;
+        application live {
+            live on;
+            record off;
+            push rtmp://localhost/hls;
+        }
+    }
+}
+server {
+    listen 80;
+    server_name localhost;
+    location / {
+        root /usr/local/nginx/html;
+        index index.html index.htm;
+    }
+    location /hls {
+        types {
+            application/vnd.apple.mpegurl m3u8;
+            video/mp2t ts;
+        }
+        root /usr/local/nginx;
+        add_header Cache-Control no-cache;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS';
+        add_header Access-Control-Allow-Headers 'Origin, X-Requested-With, Content-Type, Accept';
+    }
+}
+sudo /usr/local/nginx/sbin/nginx -s reload
+
+สร้างไดเรกทอรีสำหรับเก็บไฟล์ HLS
+sudo mkdir /usr/local/nginx/hls
+sudo chmod -R 777 /usr/local/nginx/hls
+
+สร้างไดเรกทอรีสำหรับเก็บไฟล์ video
+sudo mkdir /usr/local/nginx/html/video
+sudo chmod -R 777 /usr/local/nginx/html/video
+
+สร้างไฟล์ index.html ในไดเรกทอรี /usr/local/nginx/html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Streaming</title>
+</head>
+<body>
+    <video width="320" height="240" controls>
+        <source src="http://localhost/hls/master.m3u8" type="application/x-mpegURL">
+    </video>
+</body>
+</html>
+
+สร้างไฟล์ index.html ในไดเรกทอรี /usr/local/nginx/html/video
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Streaming</title>
+</head>
+<body>
+    <video width="320" height="240" controls>
+        <source src="http://localhost/video/ponrawat.mp4" type="video/mp4">
+    </video>
+</body>
+</html>
