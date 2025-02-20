@@ -80,3 +80,16 @@ sudo chmod -R 777 /usr/local/nginx/html/video
     </video>
 </body>
 </html>
+
+สร้างไฟล์ ponrawat.mp4 ในไดเรกทอรี /usr/local/nginx/html/video
+wget https://www.sample-videos.com/video                             /mp4/720/big_buck_bunny_720p_1mb.mp4   -O /usr/local/nginx/html/video/ponrawat.mp4
+
+สร้างไฟล์ ponrawat_720p.m3u8 ในไดเรกทอรี /usr/local/nginx/hls
+ffmpeg -i /usr/local/nginx/html/video/ponrawat.mp4 -c:v libx264 -c:a aac -strict -2 -f hls -hls_list_size 0 -hls_time 10 /usr/local/nginx/hls/ponrawat_720p.m3u8
+
+สร้างไฟล์ ponrawat_1080p.m3u8 ในไดเรกทอรี /usr/local/nginx/hls
+ffmpeg -i /usr/local/nginx/html/video/ponrawat.mp4 -c:v libx264 -preset veryfast -b:v 3000k -s 1920x1080 -c:a aac -ar 44100 -b:a 192k -f hls -hls_list_size 0 -hls_time 10 /usr/local/nginx/hls/ponrawat_1080p.m3u8
+
+เข้าเว็บไซต์ http://localhost และ http://localhost/video บนเว็บเบราว์เซอร์
+
+
